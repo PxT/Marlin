@@ -61,6 +61,11 @@ void st_set_e_position(const long &e);
 // Get current position in steps
 long st_get_position(uint8_t axis);
 
+#ifdef ENABLE_AUTO_BED_LEVELING
+// Get current position in mm
+float st_get_position_mm(uint8_t axis);
+#endif  //ENABLE_AUTO_BED_LEVELING
+
 // The stepper subsystem goes to sleep when it runs out of things to execute. Call this
 // to notify the subsystem that it is time to go to work.
 void st_wake_up();
@@ -86,5 +91,11 @@ void digipot_init();
 void digipot_current(uint8_t driver, int current);
 void microstep_init();
 void microstep_readings();
+
+#ifdef BABYSTEPPING
+  void babystep(const uint8_t axis,const bool direction); // perform a short step with a single stepper motor, outside of any convention
+#endif
+     
+
 
 #endif

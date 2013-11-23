@@ -66,6 +66,10 @@ float current_temperature_bed = 0.0;
   unsigned char fanSpeedSoftPwm;
 #endif
   
+#ifdef BABYSTEPPING
+  volatile int babystepsTodo[3]={0,0,0};
+#endif
+  
 //===========================================================================
 //=============================private variables============================
 //===========================================================================
@@ -1036,7 +1040,7 @@ ISR(TIMER0_COMPB_vect)
   static unsigned char temp_state = 0;
   static unsigned char pwm_count = (1 << SOFT_PWM_SCALE);
   static unsigned char soft_pwm_0;
-  #if EXTRUDERS > 1
+  #if (EXTRUDERS > 1) || defined(HEATERS_PARALLEL)
   static unsigned char soft_pwm_1;
   #endif
   #if EXTRUDERS > 2
@@ -1048,7 +1052,12 @@ ISR(TIMER0_COMPB_vect)
   
   if(pwm_count == 0){
     soft_pwm_0 = soft_pwm[0];
-    if(soft_pwm_0 > 0) WRITE(HEATER_0_PIN,1);
+    if(soft_pwm_0 > 0) { 
+      WRITE(HEATER_0_PIN,1);
+      #ifdef HEATERS_PARALLEL
+      WRITE(HEATER_1_PIN,1);
+      #endif
+    }
     #if EXTRUDERS > 1
     soft_pwm_1 = soft_pwm[1];
     if(soft_pwm_1 > 0) WRITE(HEATER_1_PIN,1);
@@ -1066,7 +1075,12 @@ ISR(TIMER0_COMPB_vect)
     if(soft_pwm_fan > 0) WRITE(FAN_PIN,1);
     #endif
   }
-  if(soft_pwm_0 <= pwm_count) WRITE(HEATER_0_PIN,0);
+  if(soft_pwm_0 <= pwm_count) { 
+      WRITE(HEATER_0_PIN,0);
+      #ifdef HEATERS_PARALLEL
+      WRITE(HEATER_1_PIN,0);
+      #endif
+    }
   #if EXTRUDERS > 1
   if(soft_pwm_1 <= pwm_count) WRITE(HEATER_1_PIN,0);
   #endif
@@ -1252,7 +1266,26 @@ ISR(TIMER0_COMPB_vect)
        bed_max_temp_error();
     }
 #endif
-  }  
+  }
+  
+#ifdef BABYSTEPPING
+  for(uint8_t axis=0;axis<3;axis++)
+  {
+    int curTodo=babystepsTodo[axis]; //get rid of volatile for performance
+   
+    if(curTodo>0)
+    {
+      babystep(axis,/*fwd*/true);
+      babystepsTodo[axis]--; //less to do next time
+    }
+    else
+    if(curTodo<0)
+    {
+      babystep(axis,/*fwd*/false);
+      babystepsTodo[axis]++; //less to do next time
+    }
+  }
+#endif //BABYSTEPPING
 }
 
 #ifdef PIDTEMP

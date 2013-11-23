@@ -19,7 +19,10 @@ int absPreheatHotendTemp;
 int absPreheatHPBTemp;
 int absPreheatFanSpeed;
 
+#ifdef ULTIPANEL
 static float manual_feedrate[] = MANUAL_FEEDRATE;
+#endif // ULTIPANEL
+
 /* !Configuration settings */
 
 //Function pointer to menu functions.
@@ -88,9 +91,14 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
 
 #if !defined(LCD_I2C_VIKI)
   #define ENCODER_STEPS_PER_MENU_ITEM 5
-  #define ENCODER_PULSES_PER_STEP 1
+  #ifndef ENCODER_PULSES_PER_STEP
+    #define ENCODER_PULSES_PER_STEP 1
+  #endif
 #else
   #define ENCODER_STEPS_PER_MENU_ITEM 2 // VIKI LCD rotary encoder uses a different number of steps per rotation
+  #ifndef ENCODER_PULSES_PER_STEP
+    #define ENCODER_PULSES_PER_STEP 1
+  #endif
 #endif
 
 
@@ -133,6 +141,9 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
 volatile uint8_t buttons;//Contains the bits of the currently pressed buttons.
 #else
 volatile uint8_t buttons_reprapworld_keypad; // to store the reprapworld_keypad shiftregister values
+#endif
+#ifdef LCD_HAS_SLOW_BUTTONS
+volatile uint8_t slow_buttons;//Contains the bits of the currently pressed buttons.
 #endif
 uint8_t currentMenuViewOffset;              /* scroll offset in the current menu */
 uint32_t blocking_enc;
@@ -317,6 +328,68 @@ static void lcd_cooldown()
     lcd_return_to_status();
 }
 
+#ifdef BABYSTEPPING
+static void lcd_babystep_x()
+{
+    if (encoderPosition != 0)
+    {
+        babystepsTodo[X_AXIS]+=(int)encoderPosition;
+        encoderPosition=0;
+        lcdDrawUpdate = 1;
+    }
+    if (lcdDrawUpdate)
+    {
+        lcd_implementation_drawedit(PSTR("Babystepping X"),"");
+    }
+    if (LCD_CLICKED)
+    {
+        lcd_quick_feedback();
+        currentMenu = lcd_tune_menu;
+        encoderPosition = 0;
+    }
+}
+
+static void lcd_babystep_y()
+{
+    if (encoderPosition != 0)
+    {
+        babystepsTodo[Y_AXIS]+=(int)encoderPosition;
+        encoderPosition=0;
+        lcdDrawUpdate = 1;
+    }
+    if (lcdDrawUpdate)
+    {
+        lcd_implementation_drawedit(PSTR("Babystepping Y"),"");
+    }
+    if (LCD_CLICKED)
+    {
+        lcd_quick_feedback();
+        currentMenu = lcd_tune_menu;
+        encoderPosition = 0;
+    }
+}
+
+static void lcd_babystep_z()
+{
+    if (encoderPosition != 0)
+    {
+        babystepsTodo[Z_AXIS]+=BABYSTEP_Z_MULTIPLICATOR*(int)encoderPosition;
+        encoderPosition=0;
+        lcdDrawUpdate = 1;
+    }
+    if (lcdDrawUpdate)
+    {
+        lcd_implementation_drawedit(PSTR("Babystepping Z"),"");
+    }
+    if (LCD_CLICKED)
+    {
+        lcd_quick_feedback();
+        currentMenu = lcd_tune_menu;
+        encoderPosition = 0;
+    }
+}
+#endif //BABYSTEPPING
+
 static void lcd_tune_menu()
 {
     START_MENU();
@@ -334,6 +407,14 @@ static void lcd_tune_menu()
 #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
+    
+#ifdef BABYSTEPPING
+    #ifdef BABYSTEP_XY
+      MENU_ITEM(submenu, "Babystep X", lcd_babystep_x);
+      MENU_ITEM(submenu, "Babystep Y", lcd_babystep_y);
+    #endif //BABYSTEP_XY
+    MENU_ITEM(submenu, "Babystep Z", lcd_babystep_z);
+#endif
 #ifdef FILAMENTCHANGEENABLE
      MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600"));
 #endif
@@ -345,7 +426,9 @@ static void lcd_prepare_menu()
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
 #ifdef SDSUPPORT
-    //MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
+    #ifdef MENU_ADDAUTOSTART
+      MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
+    #endif
 #endif
     MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
@@ -717,7 +800,11 @@ void lcd_sdcard_menu()
     {
         if (_menuItemNr == _lineNr)
         {
-            card.getfilename(i);
+            #ifndef SDCARD_RATHERRECENTFIRST
+              card.getfilename(i);
+            #else
+              card.getfilename(fileCnt-1-i);
+            #endif
             if (card.filenameIsDir)
             {
                 MENU_ITEM(sddirectory, MSG_CARD_MENU, card.filename, card.longFilename);
@@ -911,18 +998,27 @@ void lcd_init()
     WRITE(SHIFT_LD,HIGH);
   #endif
 #else
-    pinMode(SHIFT_CLK,OUTPUT);
-    pinMode(SHIFT_LD,OUTPUT);
-    pinMode(SHIFT_EN,OUTPUT);
-    pinMode(SHIFT_OUT,INPUT);
-    WRITE(SHIFT_OUT,HIGH);
-    WRITE(SHIFT_LD,HIGH); 
-    WRITE(SHIFT_EN,LOW);
+  #ifdef SR_LCD_2W_NL
+     pinMode (SR_DATA_PIN, OUTPUT);
+     pinMode (SR_CLK_PIN, OUTPUT);
+  #else
+     pinMode(SHIFT_CLK,OUTPUT);
+     pinMode(SHIFT_LD,OUTPUT);
+     pinMode(SHIFT_EN,OUTPUT);
+     pinMode(SHIFT_OUT,INPUT);
+     WRITE(SHIFT_OUT,HIGH);
+     WRITE(SHIFT_LD,HIGH); 
+     WRITE(SHIFT_EN,LOW);
+   #endif // SR_LCD_2W_NL    
 #endif//!NEWPANEL
+
 #if (SDCARDDETECT > 0)
     WRITE(SDCARDDETECT, HIGH);
     lcd_oldcardstatus = IS_SD_INSERTED;
 #endif//(SDCARDDETECT > 0)
+    #ifdef LCD_HAS_SLOW_BUTTONS
+    slow_buttons = 0;
+    #endif
     lcd_buttons_update();
 #ifdef ULTIPANEL    
     encoderDiff = 0;
@@ -933,11 +1029,11 @@ void lcd_update()
 {
     static unsigned long timeoutToStatus = 0;
     
-    lcd_buttons_update();
-    
     #ifdef LCD_HAS_SLOW_BUTTONS
-    buttons |= lcd_implementation_read_slow_buttons(); // buttons which take too long to read in interrupt context
+    slow_buttons = lcd_implementation_read_slow_buttons(); // buttons which take too long to read in interrupt context
     #endif
+    
+    lcd_buttons_update();
     
     #if (SDCARDDETECT > 0)
     if((IS_SD_INSERTED != lcd_oldcardstatus))
@@ -1080,6 +1176,9 @@ void lcd_buttons_update()
         newbutton |= EN_C;
   #endif
     buttons = newbutton;
+    #ifdef LCD_HAS_SLOW_BUTTONS
+    buttons |= slow_buttons;
+    #endif
     #ifdef REPRAPWORLD_KEYPAD
       // for the reprapworld_keypad
       uint8_t newbutton_reprapworld_keypad=0;
