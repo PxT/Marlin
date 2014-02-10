@@ -107,10 +107,10 @@ void manage_inactivity();
 #if defined(DUAL_X_CARRIAGE) && defined(X_ENABLE_PIN) && X_ENABLE_PIN > -1 \
     && defined(X2_ENABLE_PIN) && X2_ENABLE_PIN > -1
   #define  enable_x() do { WRITE(X_ENABLE_PIN, X_ENABLE_ON); WRITE(X2_ENABLE_PIN, X_ENABLE_ON); } while (0)
-  #define disable_x() do { WRITE(X_ENABLE_PIN,!X_ENABLE_ON); WRITE(X2_ENABLE_PIN,!X_ENABLE_ON); } while (0)
+  #define disable_x() do { WRITE(X_ENABLE_PIN,!X_ENABLE_ON); WRITE(X2_ENABLE_PIN,!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
 #elif defined(X_ENABLE_PIN) && X_ENABLE_PIN > -1
   #define  enable_x() WRITE(X_ENABLE_PIN, X_ENABLE_ON)
-  #define disable_x() WRITE(X_ENABLE_PIN,!X_ENABLE_ON)
+  #define disable_x() { WRITE(X_ENABLE_PIN,!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
 #else
   #define enable_x() ;
   #define disable_x() ;
@@ -119,10 +119,10 @@ void manage_inactivity();
 #if defined(Y_ENABLE_PIN) && Y_ENABLE_PIN > -1
   #ifdef Y_DUAL_STEPPER_DRIVERS
     #define  enable_y() { WRITE(Y_ENABLE_PIN, Y_ENABLE_ON); WRITE(Y2_ENABLE_PIN,  Y_ENABLE_ON); }
-    #define disable_y() { WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON); WRITE(Y2_ENABLE_PIN, !Y_ENABLE_ON); }
+    #define disable_y() { WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON); WRITE(Y2_ENABLE_PIN, !Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
   #else
     #define  enable_y() WRITE(Y_ENABLE_PIN, Y_ENABLE_ON)
-    #define disable_y() WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON)
+    #define disable_y() { WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
   #endif
 #else
   #define enable_y() ;
@@ -132,10 +132,10 @@ void manage_inactivity();
 #if defined(Z_ENABLE_PIN) && Z_ENABLE_PIN > -1
   #ifdef Z_DUAL_STEPPER_DRIVERS
     #define  enable_z() { WRITE(Z_ENABLE_PIN, Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN, Z_ENABLE_ON); }
-    #define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN,!Z_ENABLE_ON); }
+    #define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #else
     #define  enable_z() WRITE(Z_ENABLE_PIN, Z_ENABLE_ON)
-    #define disable_z() WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON)
+    #define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #endif
 #else
   #define enable_z() ;
@@ -202,6 +202,7 @@ extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedmultiply;
 extern int extrudemultiply; // Sets extrude multiply factor (in percent)
+extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
 extern float current_position[NUM_AXIS] ;
 extern float add_homeing[3];
 #ifdef DELTA
@@ -209,6 +210,8 @@ extern float endstop_adj[3];
 #endif
 extern float min_pos[3];
 extern float max_pos[3];
+extern bool axis_known_position[3];
+extern float zprobe_zoffset;
 extern int fanSpeed;
 #ifdef BARICUDA
 extern int ValvePressure;
@@ -231,5 +234,10 @@ extern unsigned long stoptime;
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
+
+#ifdef DIGIPOT_I2C
+extern void digipot_i2c_set_current( int channel, float current );
+extern void digipot_i2c_init();
+#endif
 
 #endif

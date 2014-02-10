@@ -23,7 +23,7 @@
 
 #define PROTOCOL_VERSION "1.0"
 
-#if MOTHERBOARD == 7 || MOTHERBOARD == 71
+#if MOTHERBOARD == 7 || MOTHERBOARD == 71 || MOTHERBOARD == 72
 	#define MACHINE_NAME "Ultimaker"
 	#define FIRMWARE_URL "http://firmware.ultimaker.com"
 #elif MOTHERBOARD == 80
@@ -136,7 +136,9 @@
 	#define MSG_FILAMENTCHANGE "Change filament"
 	#define MSG_INIT_SDCARD "Init. SD-Card"	
 	#define MSG_CNG_SDCARD "Change SD-Card"
-
+    #define MSG_ZPROBE_OUT "ZProbe Outside Bed"
+    #define MSG_POSITION_UNKNOWN "Home X/Y before Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 // Serial Console Messages
 
 	#define MSG_Enqueing "enqueing \""
@@ -161,6 +163,7 @@
 	#define MSG_END_FILE_LIST "End file list"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Invalid extruder "
 	#define MSG_M105_INVALID_EXTRUDER "M105 Invalid extruder "
+	#define MSG_M200_INVALID_EXTRUDER "M200 Invalid extruder "
 	#define MSG_M218_INVALID_EXTRUDER "M218 Invalid extruder "
 	#define MSG_ERR_NO_THERMISTORS "No thermistors - no temperature"
 	#define MSG_M109_INVALID_EXTRUDER "M109 Invalid extruder "
@@ -217,7 +220,7 @@
 	#define WELCOME_MSG MACHINE_NAME " Gotowe."
 	#define MSG_SD_INSERTED "Karta wlozona"
 	#define MSG_SD_REMOVED "Karta usunieta"
-	#define MSG_MAIN "Main"
+	#define MSG_MAIN "Menu glowne"
 	#define MSG_AUTOSTART "Autostart"
 	#define MSG_DISABLE_STEPPERS "Wylacz silniki"
 	#define MSG_AUTO_HOME "Auto. poz. zerowa"
@@ -227,8 +230,8 @@
 	#define MSG_PREHEAT_ABS "Rozgrzej ABS"
 	#define MSG_PREHEAT_ABS_SETTINGS "Ustawienia roz. ABS"
 	#define MSG_COOLDOWN "Chlodzenie"
-	#define MSG_SWITCH_PS_ON "Switch Power On"
-	#define MSG_SWITCH_PS_OFF "Switch Power Off"
+	#define MSG_SWITCH_PS_ON "Wl. zasilacz"
+	#define MSG_SWITCH_PS_OFF "Wyl. zasilacz"
 	#define MSG_EXTRUDE "Ekstruzja"
 	#define MSG_RETRACT "Cofanie"
 	#define MSG_MOVE_AXIS "Ruch osi"
@@ -270,19 +273,19 @@
 	#define MSG_RECTRACT "Wycofanie"
 	#define MSG_TEMPERATURE "Temperatura"
 	#define MSG_MOTION "Ruch"
-	#define MSG_CONTRAST "LCD contrast"
+	#define MSG_CONTRAST "Kontrast LCD"
 	#define MSG_STORE_EPROM "Zapisz w pamieci"
 	#define MSG_LOAD_EPROM "Wczytaj z pamieci"
-	#define MSG_RESTORE_FAILSAFE " Ustawienia fabryczne"
+	#define MSG_RESTORE_FAILSAFE "Ustawienia fabryczne"
 	#define MSG_REFRESH "\004Odswiez"
-	#define MSG_WATCH "Obserwuj"
+	#define MSG_WATCH "Ekran glowny"
 	#define MSG_PREPARE "Przygotuj"
-	#define MSG_CONTROL "Kontroluj"
+	#define MSG_CONTROL "Ustawienia"
 	#define MSG_TUNE "Strojenie"
 	#define MSG_PAUSE_PRINT "Pauza"
 	#define MSG_RESUME_PRINT "Wznowienie"
 	#define MSG_STOP_PRINT "Stop"
-	#define MSG_CARD_MENU "Menu SDCard"
+	#define MSG_CARD_MENU "Menu karty SD"
 	#define MSG_NO_CARD "Brak karty"
 	#define MSG_DWELL "Uspij..."
 	#define MSG_USERWAIT "Czekaj na uzytkownika..."
@@ -298,9 +301,12 @@
 	#define MSG_CONTROL_RETRACT_RECOVER "Cof. wycof. +mm"
 	#define MSG_CONTROL_RETRACT_RECOVERF "Cof. wycof.  F"
 	#define MSG_AUTORETRACT "Auto. wycofanie"
-	#define MSG_FILAMENTCHANGE "Change filament"
-	#define MSG_INIT_SDCARD "Init. SD-Card"	
-	#define MSG_CNG_SDCARD "Change SD-Card"
+	#define MSG_FILAMENTCHANGE "Zmien filament"
+	#define MSG_INIT_SDCARD "Uruchom karte SD"	
+	#define MSG_CNG_SDCARD "Zmien karte SD"
+    #define MSG_ZPROBE_OUT "Probkuj Z poza lozem"
+    #define MSG_POSITION_UNKNOWN "Domuj X/Y przed Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 
 // Serial Console Messages
 
@@ -310,7 +316,7 @@
 	#define MSG_BROWNOUT_RESET " Reset (spadek napiecia)"
 	#define MSG_WATCHDOG_RESET " Reset (watchdog)"
 	#define MSG_SOFTWARE_RESET " Reset (programowy)"
-	#define MSG_MARLIN "Marlin "
+	#define MSG_MARLIN "Marlin"
 	#define MSG_AUTHOR " | Autor: "
 	#define MSG_CONFIGURATION_VER " Ostatnia aktualizacja: "
 	#define MSG_FREE_MEMORY " Wolna pamiec: "
@@ -326,6 +332,7 @@
 	#define MSG_END_FILE_LIST "Koniec listy plikow"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Niepoprawny ekstruder "
 	#define MSG_M105_INVALID_EXTRUDER "M105 Niepoprawny ekstruder "
+	#define MSG_M200_INVALID_EXTRUDER "M200 Niepoprawny ekstruder "
 	#define MSG_M218_INVALID_EXTRUDER "M218 Niepoprawny ekstruder "
 	#define MSG_ERR_NO_THERMISTORS "Brak termistorow - brak temperatury :("
 	#define MSG_M109_INVALID_EXTRUDER "M109 Niepoprawny ekstruder "
@@ -348,8 +355,8 @@
 	#define MSG_Z_MIN "z_min: "
 	#define MSG_Z_MAX "z_max: "
 	#define MSG_M119_REPORT "Zgloszenie statusu wylacznikow krancowych"
-	#define MSG_ENDSTOP_HIT "WYZWOLONY"
-	#define MSG_ENDSTOP_OPEN "otwarty"
+	#define MSG_ENDSTOP_HIT "Wyzwolony"
+	#define MSG_ENDSTOP_OPEN "Otwarty"
 	#define MSG_HOTEND_OFFSET "Hotend offsets:"
 
 	#define MSG_SD_CANT_OPEN_SUBDIR "Nie mozna otworzyc podkatalogu"
@@ -465,6 +472,9 @@
 	#define MSG_FILAMENTCHANGE "Changer filament"
 	#define MSG_INIT_SDCARD "Init. la carte SD"	
 	#define MSG_CNG_SDCARD "Changer de carte SD"
+    #define MSG_ZPROBE_OUT "ZProbe Outside Bed"
+    #define MSG_POSITION_UNKNOWN "Home X/Y before Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 
 // Serial Console Messages
 
@@ -490,6 +500,7 @@
 	#define MSG_END_FILE_LIST "Fin de la liste de fichiers"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Extruder invalide"
 	#define MSG_M105_INVALID_EXTRUDER "M105 Extruder invalide"
+	#define MSG_M200_INVALID_EXTRUDER "M200 Extruder invalide"
 	#define MSG_M218_INVALID_EXTRUDER "M218 Extruder invalide"
 	#define MSG_ERR_NO_THERMISTORS "Pas de thermistor, pas de temperature"
 	#define MSG_M109_INVALID_EXTRUDER "M109 Extruder invalide "
@@ -632,6 +643,9 @@
 	#define MSG_FILAMENTCHANGE "Filament wechseln"
 	#define MSG_INIT_SDCARD "Init. SD-Card"	
 	#define MSG_CNG_SDCARD "Change SD-Card"
+    #define MSG_ZPROBE_OUT "ZProbe Outside Bed"
+    #define MSG_POSITION_UNKNOWN "Home X/Y before Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 	
 // Serial Console Messages
 
@@ -657,6 +671,7 @@
 	#define MSG_END_FILE_LIST "End file list"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Invalid extruder "
 	#define MSG_M105_INVALID_EXTRUDER "M105 Invalid extruder "
+	#define MSG_M200_INVALID_EXTRUDER "M200 Invalid extruder "
 	#define MSG_M218_INVALID_EXTRUDER "M218 Invalid extruder "
 	#define MSG_ERR_NO_THERMISTORS "No thermistors - no temp"
 	#define MSG_M109_INVALID_EXTRUDER "M109 Invalid extruder "
@@ -803,6 +818,9 @@
 	#define MSG_RETRACT_ARROW "Retraer"
 	#define MSG_PART_RELEASE "Desacople Parcial"
 	#define MSG_STEPPER_RELEASED "Desacoplada."
+    #define MSG_ZPROBE_OUT "ZProbe Outside Bed"
+    #define MSG_POSITION_UNKNOWN "Home X/Y before Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 
 // Serial Console Messages
 
@@ -828,6 +846,7 @@
 	#define MSG_END_FILE_LIST "Fin de la lista de archivos"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Extrusor Invalido "
 	#define MSG_M105_INVALID_EXTRUDER "M105 Extrusor Invalido "
+	#define MSG_M200_INVALID_EXTRUDER "M200 Extrusor Invalido "
 	#define MSG_M218_INVALID_EXTRUDER "M218 Extrusor Invalido "
 	#define MSG_ERR_NO_THERMISTORS "No hay termistores - no temp"
 	#define MSG_M109_INVALID_EXTRUDER "M109 Extrusor Invalido "
@@ -964,6 +983,9 @@
 	#define MSG_FILAMENTCHANGE "Change filament"
 	#define MSG_INIT_SDCARD "Init. SD-Card"	
 	#define MSG_CNG_SDCARD "Change SD-Card"
+    #define MSG_ZPROBE_OUT "ZProbe Outside Bed"
+    #define MSG_POSITION_UNKNOWN "Home X/Y before Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 
 // Serial Console Messages
 
@@ -989,6 +1011,7 @@
 	#define MSG_END_FILE_LIST					"Конец списка файлов"
 	#define MSG_M104_INVALID_EXTRUDER			"M104 ошибка экструдера "
 	#define MSG_M105_INVALID_EXTRUDER			"M105 ошибка экструдера "
+	#define MSG_M200_INVALID_EXTRUDER			"M200 ошибка экструдера "
 	#define MSG_M218_INVALID_EXTRUDER			"M218 ошибка экструдера "
 	#define MSG_ERR_NO_THERMISTORS				"Нет термистра - нет температуры"
 	#define MSG_M109_INVALID_EXTRUDER			"M109 ошибка экструдера "
@@ -1125,6 +1148,9 @@
 	#define MSG_FILAMENTCHANGE       "Cambia filamento"
 	#define MSG_INIT_SDCARD          "Iniz. SD-Card"
 	#define MSG_CNG_SDCARD           "Cambia SD-Card"
+    #define MSG_ZPROBE_OUT "ZProbe Outside Bed"
+    #define MSG_POSITION_UNKNOWN "Home X/Y before Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 
 	// Serial Console Messages
 
@@ -1150,6 +1176,7 @@
 	#define MSG_END_FILE_LIST        "Fine Lista File"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Estrusore non valido "
 	#define MSG_M105_INVALID_EXTRUDER "M105 Estrusore non valido "
+	#define MSG_M200_INVALID_EXTRUDER "M200 Estrusore non valido "
 	#define MSG_M218_INVALID_EXTRUDER "M218 Estrusore non valido "
 	#define MSG_ERR_NO_THERMISTORS   "Nessun Termistore - nessuna temperatura"
 	#define MSG_M109_INVALID_EXTRUDER "M109 Estrusore non valido "
@@ -1295,6 +1322,9 @@
 	#define MSG_FILAMENTCHANGE "Change filament"
 	#define MSG_INIT_SDCARD "Init. SD-Card"	
 	#define MSG_CNG_SDCARD "Change SD-Card"
+    #define MSG_ZPROBE_OUT "Sonda fora da mesa"
+    #define MSG_POSITION_UNKNOWN "Home X/Y antes de Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 
 // Serial Console Messages
 
@@ -1320,6 +1350,7 @@
 	#define MSG_END_FILE_LIST "Fim da lista de arquivos"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Extrusor inválido "
 	#define MSG_M105_INVALID_EXTRUDER "M105 Extrusor inválido "
+	#define MSG_M200_INVALID_EXTRUDER "M200 Extrusor inválido "
 	#define MSG_M218_INVALID_EXTRUDER "M218 Extrusor inválido "
 	#define MSG_ERR_NO_THERMISTORS "Nao ha termistor - no temp"
 	#define MSG_M109_INVALID_EXTRUDER "M109 Extrusor inválido "
@@ -1461,6 +1492,9 @@
 	#define MSG_FILAMENTCHANGE "Change filament"
 	#define MSG_INIT_SDCARD "Init. SD-Card"	
 	#define MSG_CNG_SDCARD "Change SD-Card"
+    #define MSG_ZPROBE_OUT "ZProbe Outside Bed"
+    #define MSG_POSITION_UNKNOWN "Home X/Y before Z"
+    #define MSG_ZPROBE_ZOFFSET "Z Offset"
 
 // Serial Console Messages
 
@@ -1486,6 +1520,7 @@
 	#define MSG_END_FILE_LIST "Tiedostolistauksen loppu"
 	#define MSG_M104_INVALID_EXTRUDER "M104 Virheellinen suutin "
 	#define MSG_M105_INVALID_EXTRUDER "M105 Virheellinen suutin "
+	#define MSG_M200_INVALID_EXTRUDER "M200 Virheellinen suutin "
 	#define MSG_M218_INVALID_EXTRUDER "M218 Virheellinen suutin "
 	#define MSG_ERR_NO_THERMISTORS "Ei termistoreja - ei lampotiloja"
 	#define MSG_M109_INVALID_EXTRUDER "M109 Virheellinen suutin "

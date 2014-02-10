@@ -8,9 +8,9 @@
 //===========================================================================
 //============================= DELTA Printer ===============================
 //===========================================================================
-// For a Delta printer rplace the configuration files wilth the files in the 
+// For a Delta printer rplace the configuration files wilth the files in the
 // example_configurations/delta directory.
-// 
+//
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
@@ -36,7 +36,8 @@
 // 11 = Gen7 v1.1, v1.2 = 11
 // 12 = Gen7 v1.3
 // 13 = Gen7 v1.4
-// 20 = Sethi 3D_1 
+// 2  = Cheaptronic v1.0
+// 20 = Sethi 3D_1
 // 3  = MEGA/RAMPS up to 1.2 = 3
 // 33 = RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Bed)
 // 34 = RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Bed)
@@ -51,6 +52,7 @@
 // 65 = Azteeg X1
 // 66 = Melzi with ATmega1284 (MaKr3d version)
 // 67 = Azteeg X3
+// 68 = Azteeg X3 Pro
 // 7  = Ultimaker
 // 71 = Ultimaker (Older electronics. Pre 1.5.4. This is rare)
 // 77 = 3Drag Controller
@@ -155,6 +157,10 @@
 // HEATER_BED_DUTY_CYCLE_DIVIDER intervals.
 //#define HEATER_BED_DUTY_CYCLE_DIVIDER 4
 
+// If you want the M105 heater power reported in watts, define the BED_WATTS, and (shared for all extruders) EXTRUDER_WATTS
+//#define EXTRUDER_WATTS (12.0*12.0/6.7) //  P=I^2/R
+//#define BED_WATTS (12.0*12.0/1.1)      // P=I^2/R
+
 // PID settings:
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
@@ -167,7 +173,7 @@
                                   // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
   #define PID_INTEGRAL_DRIVE_MAX 255  //limit for the integral term
   #define K1 0.95 //smoothing factor within the PID
-  #define PID_dT ((16.0 * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
+  #define PID_dT ((OVERSAMPLENR * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
 // If you are using a preconfigured hotend then you can use one of the value sets by uncommenting it
 // Ultimaker
@@ -305,6 +311,17 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
+// Travel limits after homing
+#define X_MAX_POS 205
+#define X_MIN_POS 0
+#define Y_MAX_POS 205
+#define Y_MIN_POS 0
+#define Z_MAX_POS 200
+#define Z_MIN_POS 0
+
+#define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
+#define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
+#define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
 //============================= Bed Auto Leveling ===========================
 
 //#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
@@ -324,9 +341,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
   #define Z_RAISE_BEFORE_HOMING 4       // (in mm) Raise Z before homing (G28) for Probe Clearance.
                                         // Be sure you have this distance over your Z_MAX_POS in case
-    
+
   #define XY_TRAVEL_SPEED 8000         // X and Y axis travel speed between probes, in mm/min
-  
+
   #define Z_RAISE_BEFORE_PROBING 15    //How much the extruder will be raised before traveling to the first probing point.
   #define Z_RAISE_BETWEEN_PROBINGS 5  //How much the extruder will be raised when traveling from between next probing points
 
@@ -335,21 +352,37 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
   //The value is the delay to turn the servo off after powered on - depends on the servo speed; 300ms is good value, but you can try lower it.
   // You MUST HAVE the SERVO_ENDSTOPS defined to use here a value higher than zero otherwise your code will not compile.
 
-//  #define PROBE_SERVO_DEACTIVATION_DELAY 300  
-  
+//  #define PROBE_SERVO_DEACTIVATION_DELAY 300
+
+
+//If you have enabled the Bed Auto Levelling and are using the same Z Probe for Z Homing,
+//it is highly recommended you let this Z_SAFE_HOMING enabled!!!
+
+  #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
+                          // When defined, it will:
+                          // - Allow Z homing only after X and Y homing AND stepper drivers still enabled
+                          // - If stepper drivers timeout, it will need X and Y homing again before Z homing
+                          // - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
+                          // - Block Z homing only when the probe is outside bed area.
+
+  #ifdef Z_SAFE_HOMING
+
+    #define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28)
+    #define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28)
+
+  #endif
+
+  // with accurate bed leveling, the bed is sampled in a ACCURATE_BED_LEVELING_POINTSxACCURATE_BED_LEVELING_POINTS grid and least squares solution is calculated
+  // Note: this feature occupies 10'206 byte
+  #define ACCURATE_BED_LEVELING
+
+  #ifdef ACCURATE_BED_LEVELING
+     // I wouldn't see a reason to go above 3 (=9 probing points on the bed)
+    #define ACCURATE_BED_LEVELING_POINTS 2
+  #endif
+
 #endif
 
-// Travel limits after homing
-#define X_MAX_POS 205
-#define X_MIN_POS 0
-#define Y_MAX_POS 205
-#define Y_MIN_POS 0
-#define Z_MAX_POS 200
-#define Z_MIN_POS 0
-
-#define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
-#define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
-#define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
 
 // The position of the homing switches
 //#define MANUAL_HOME_POSITIONS  // If defined, MANUAL_*_HOME_POS below will be used
@@ -416,8 +449,11 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 //#define SDSUPPORT // Enable SD Card Support in Hardware Console
 //#define SDSLOW // Use slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
 //#define ENCODER_PULSES_PER_STEP 1 // Increase if you have a high resolution encoder
+//#define ENCODER_STEPS_PER_MENU_ITEM 5 // Set according to ENCODER_PULSES_PER_STEP or your liking
 //#define ULTIMAKERCONTROLLER //as available from the ultimaker online store.
 //#define ULTIPANEL  //the ultipanel as on thingiverse
+//#define LCD_FEEDBACK_FREQUENCY_HZ 1000	// this is the tone frequency the buzzer plays when on UI feedback. ie Screen Click
+//#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100 // the duration the buzzer plays the UI feedback sound. ie Screen Click
 
 // The MaKr3d Makr-Panel with graphic controller and SD support
 // http://reprap.org/wiki/MaKr3d_MaKrPanel
@@ -503,6 +539,21 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
   #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
   #define NEWPANEL
   #define ULTIPANEL
+
+  #ifndef ENCODER_PULSES_PER_STEP
+	#define ENCODER_PULSES_PER_STEP 4
+  #endif
+
+  #ifndef ENCODER_STEPS_PER_MENU_ITEM
+	#define ENCODER_STEPS_PER_MENU_ITEM 1
+  #endif
+
+
+  #ifdef LCD_USE_I2C_BUZZER
+	#define LCD_FEEDBACK_FREQUENCY_HZ 1000
+	#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100
+  #endif
+
 #endif
 
 // Panucatt VIKI LCD with status LEDs, integrated click & L/R/U/P buttons, separate encoder inputs
@@ -522,7 +573,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // Shift register panels
 // ---------------------
 // 2 wire Non-latching LCD SR from:
-// https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection 
+// https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection
 //#define SR_LCD
 #ifdef SR_LCD
    #define SR_LCD_2W_NL    // Non latching 2 wire shiftregister
